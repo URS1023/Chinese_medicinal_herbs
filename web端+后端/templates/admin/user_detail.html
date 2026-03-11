@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}用户详情 - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user"></i> 用户详情</h2>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">返回用户列表</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">基本信息</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>用户ID：</strong>{{ user.id }}</p>
+                    <p><strong>用户名：</strong>{{ user.username }}</p>
+                    <p><strong>角色：</strong>{{ '管理员' if user.is_admin else '普通用户' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>注册时间：</strong>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <p><strong>最后活动时间：</strong>{{ user.last_seen.strftime('%Y-%m-%d %H:%M:%S') if user.last_seen else '暂无' }}</p>
+                    <p><strong>识别总次数：</strong>{{ history|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">识别历史记录</h5>
+        </div>
+        <div class="card-body">
+            {% if history %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>图片</th>
+                            <th>识别结果</th>
+                            <th>置信度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                        <tr>
+                            <td>{{ record.detection_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                {% if record.image_path %}
+                                <img src="{{ url_for('static', filename=record.image_path) }}" alt="识别图片" class="img-thumbnail" style="max-height: 50px;">
+                                {% else %}
+                                无图片
+                                {% endif %}
+                            </td>
+                            <td>{{ record.herb.name }}</td>
+                            <td>{{ "%.2f%%"|format(record.confidence * 100) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">暂无识别记录</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,10 @@
+<!--pages/announcement-detail/announcement-detail.wxml-->
+<view class="container" wx:if="{{announcement}}">
+  <view class="announcement-title">{{announcement.title}}</view>
+  <view class="announcement-meta">
+    <text class="announcement-date">{{announcement.date}}</text>
+  </view>
+  <view class="announcement-content">
+    <text>{{announcement.content}}</text>
+  </view>
+</view> 

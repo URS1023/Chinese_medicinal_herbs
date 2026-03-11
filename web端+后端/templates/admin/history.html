@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}识别历史记录{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-history"></i> 识别历史记录</h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>图片</th>
+                            <th>识别结果</th>
+                            <th>置信度</th>
+                            <th>时间</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                        <tr>
+                            <td>{{ record.id }}</td>
+                            <td>{{ record.user.username }}</td>
+                            <td>
+                                {% if record.image_path %}
+                                <img src="{{ url_for('static', filename=record.image_path) }}" 
+                                     alt="识别图片" class="img-thumbnail" style="max-height: 50px;">
+                                {% else %}
+                                无图片
+                                {% endif %}
+                            </td>
+                            <td>{{ record.herb.name }}</td>
+                            <td>{{ "%.2f%%"|format(record.confidence * 100) }}</td>
+                            <td>{{ record.detection_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                {% if record.is_correct %}
+                                <span class="badge bg-success">正确</span>
+                                {% else %}
+                                <span class="badge bg-danger">错误</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>药材管理</h2>
+        <a href="{{ url_for('add_herb') }}" class="btn btn-primary">添加药材</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>图片</th>
+                    <th>描述</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for herb in herbs %}
+                <tr>
+                    <td>{{ herb.id }}</td>
+                    <td>{{ herb.name }}</td>
+                    <td>
+                        {% if herb.image_path %}
+                        <img src="{{ herb.image_path }}" alt="{{ herb.name }}" style="max-width: 100px;">
+                        {% else %}
+                        无图片
+                        {% endif %}
+                    </td>
+                    <td>{{ herb.description[:50] }}{% if herb.description|length > 50 %}...{% endif %}</td>
+                    <td>{{ herb.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_herb', id=herb.id) }}" class="btn btn-sm btn-primary">编辑</a>
+                        <a href="{{ url_for('delete_herb', id=herb.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除这个药材吗？')">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

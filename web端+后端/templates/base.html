@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - 中药材识别系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --primary-dark: #224abe;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --sidebar-bg: #1a1c23;
+            --sidebar-hover: #2d2f35;
+            --content-bg: #f8f9fc;
+        }
+
+        body {
+            background-color: var(--content-bg);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 0;
+            width: 250px;
+            background: var(--sidebar-bg);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-header h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            padding: 1rem 1.5rem;
+            border-radius: 0;
+            margin: 0;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            background-color: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            color: white !important;
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary-color);
+        }
+
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+            background: var(--sidebar-hover);
+        }
+
+        .user-info .user-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-info .user-role {
+            margin-bottom: 1rem;
+        }
+
+        .user-info .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .auth-buttons {
+            padding: 1.5rem;
+            background: var(--sidebar-hover);
+        }
+
+        .auth-buttons .btn {
+            padding: 0.6rem 1rem;
+            font-weight: 500;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border: none;
+            box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 115, 223, 0.3);
+        }
+
+        .badge.bg-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%) !important;
+        }
+
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #6b6d7d 100%) !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="d-flex flex-column h-100">
+            <div class="sidebar-header">
+                <h4>中药材识别系统</h4>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                        <i class="fas fa-home"></i> 首页
+                    </a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'detect' %}active{% endif %}" href="{{ url_for('detect') }}">
+                        <i class="fas fa-camera"></i> 药材识别
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'sensor_dashboard' %}active{% endif %}" href="{{ url_for('sensor_dashboard') }}">
+                        <i class="fas fa-chart-line"></i> 数据监控
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'herb_recommend' %}active{% endif %}" href="{{ url_for('herb_recommend') }}">
+                        <i class="fas fa-star"></i> 药材推荐
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'user_history' %}active{% endif %}" href="{{ url_for('user_history') }}">
+                        <i class="fas fa-history"></i> 识别历史
+                    </a>
+                </li>
+                {% if current_user.is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint.startswith('admin.') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                        <i class="fas fa-cog"></i> 管理后台
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+            </ul>
+            
+            <!-- 用户信息或登录按钮 -->
+            {% if current_user.is_authenticated %}
+            <div class="user-info mt-auto">
+                <div class="user-name">
+                    <i class="fas fa-user"></i> {{ current_user.username }}
+                </div>
+                <div class="user-role">
+                    {% if current_user.is_admin %}
+                    <span class="badge bg-primary">管理员</span>
+                    {% else %}
+                    <span class="badge bg-secondary">普通用户</span>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm w-100">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </a>
+            </div>
+            {% else %}
+            <div class="auth-buttons mt-auto">
+                <a href="{{ url_for('login') }}" class="btn btn-light w-100 mb-2">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light w-100">
+                    <i class="fas fa-user-plus"></i> 注册
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

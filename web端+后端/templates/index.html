@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}首页{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #4e73df20 0%, #4e73df10 100%);
+        border-radius: 50%;
+        transform: translate(100px, -100px);
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        color: #34495e;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .action-buttons .btn {
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(78, 115, 223, 0.3);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #f6c23e 0%, #f4b619 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(246, 194, 62, 0.2);
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(246, 194, 62, 0.3);
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border-radius: 3px;
+    }
+
+    .example-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .example-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .example-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .example-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .example-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .example-card .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .example-card .card-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .feature-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        color: #4e73df;
+    }
+
+    .features-list {
+        margin-top: 2rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="hero-section">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="hero-title">中药材智能识别系统</h1>
+                <p class="hero-subtitle">
+                    运用先进的深度学习技术，为您提供快速、准确的中药材识别服务。
+                    上传药材图片，即可获取详细的药材信息、功效说明及相似药材推荐。
+                </p>
+                <div class="action-buttons">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('detect') }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-camera"></i> 开始识别
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            {% if current_user.is_authenticated and current_user.is_admin %}
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-warning btn-lg w-100 mb-3">
+                                <i class="fas fa-tachometer-alt"></i> 管理后台
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="features-list">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-brain feature-icon"></i>
+                                <span>智能深度学习识别</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-database feature-icon"></i>
+                                <span>丰富的药材数据库</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-chart-line feature-icon"></i>
+                                <span>准确的识别结果</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-sync feature-icon"></i>
+                                <span>智能推荐相似药材</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">示例药材</div>
+
+    {% for row in example_rows %}
+    <div class="row">
+        {% for example in row %}
+        <div class="col-md-3">
+            <div class="card example-card">
+                <img src="{{ url_for('static', filename=example.image_path) }}" class="card-img-top" alt="{{ example.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ example.name }}</h5>
+                    <p class="card-text">{{ example.description }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">添加药材</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">药材名称</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image" class="form-label">药材图片</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">药材描述</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="similar_herbs" class="form-label">相似药材</label>
+                            <textarea class="form-control" id="similar_herbs" name="similar_herbs" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="effects" class="form-label">功效主治</label>
+                            <textarea class="form-control" id="effects" name="effects" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="properties" class="form-label">性味</label>
+                            <textarea class="form-control" id="properties" name="properties" rows="2" required></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">添加药材</button>
+                            <a href="{{ url_for('admin_herbs') }}" class="btn btn-secondary">返回</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

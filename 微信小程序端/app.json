@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/register/register",
+    "pages/detail/detail",
+    "pages/list1/list1",
+    "pages/announcement-detail/announcement-detail"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "中药材展示",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#000000",
+    "selectedColor": "#00BFFF",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "position": "bottom",
+    "custom": false,
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "/images/icon/home.png",
+        "selectedIconPath": "/images/icon/home.png"
+      },
+      {
+        "pagePath": "pages/list1/list1",
+        "text": "药材展示",
+        "iconPath": "/images/icon/home.png",
+        "selectedIconPath": "/images/icon/home.png"
+      }
+    ]
+  },
+  "renderer": "webview",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

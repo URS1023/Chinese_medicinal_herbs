@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block title %}传感器数据监控{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sensor-card, .status-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .sensor-card:hover, .status-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .sensor-card h6, .status-card h6 {
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .sensor-card p, .status-card p {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        color: #212529;
+    }
+
+    .status-card p.normal {
+        color: #28a745;
+    }
+
+    .status-card p.warning {
+        color: #ffc107;
+    }
+
+    .status-card p.danger {
+        color: #dc3545;
+    }
+
+    .chart-container {
+        position: relative;
+        margin: auto;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+
+    .data-table {
+        margin-top: 20px;
+    }
+
+    .data-table th {
+        background-color: #f8f9fa;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .page-header p {
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2>传感器数据监控</h2>
+                <p>实时监控环境数据和设备状态</p>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" onclick="exportData()">
+                    <i class="fas fa-download"></i> 导出数据
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 实时数据卡片 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">实时数据</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="sensor-realtime">
+                        <div class="col-md-3">
+                            <div class="sensor-card">
+                                <h6>温度</h6>
+                                <p id="temperature">--℃</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="sensor-card">
+                                <h6>湿度</h6>
+                                <p id="humidity">--%</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="sensor-card">
+                                <h6>光照</h6>
+                                <p id="light">--lux</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="sensor-card">
+                                <h6>声音</h6>
+                                <p id="sound">--dB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 状态监控卡片 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">状态监控</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="sensor-status">
+                        <div class="col-md-3">
+                            <div class="status-card">
+                                <h6>倾斜检测</h6>
+                                <p id="tilt">正常</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-card">
+                                <h6>振动检测</h6>
+                                <p id="vibrate">正常</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-card">
+                                <h6>火焰检测</h6>
+                                <p id="fire">正常</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-card">
+                                <h6>烟雾检测</h6>
+                                <p id="smoke">正常</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据趋势图表 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">数据趋势分析</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="tempHumidityChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="lightSoundChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 历史数据表格 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">历史数据记录</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="updateHistoryData(10)">最近10条</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="updateHistoryData(50)">最近50条</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="updateHistoryData(100)">最近100条</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>温度(℃)</th>
+                                    <th>湿度(%)</th>
+                                    <th>光照(lux)</th>
+                                    <th>声音(dB)</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加必要的JavaScript -->
+<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+// 初始化图表
+let tempHumidityChart = null;
+let lightSoundChart = null;
+
+// 更新实时数据
+function updateRealtimeData() {
+    fetch('/api/sensor/realtime')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('temperature').textContent = data.data.temperature + '℃';
+                document.getElementById('humidity').textContent = data.data.humidity + '%';
+                document.getElementById('light').textContent = data.data.light_sense + 'lux';
+                document.getElementById('sound').textContent = data.data.sound + 'dB';
+                
+                // 更新状态
+                updateStatus('tilt', data.data.tilt);
+                updateStatus('vibrate', data.data.vibrate);
+                updateStatus('fire', data.data.fire);
+                updateStatus('smoke', data.data.smoke);
+            }
+        })
+        .catch(error => console.error('获取实时数据失败:', error));
+}
+
+// 更新状态显示
+function updateStatus(elementId, value) {
+    const element = document.getElementById(elementId);
+    element.textContent = value === '1' ? '异常' : '正常';
+    element.className = value === '1' ? 'danger' : 'normal';
+}
+
+// 初始化图表
+function initCharts() {
+    // 温湿度图表
+    const tempHumidityCtx = document.getElementById('tempHumidityChart').getContext('2d');
+    tempHumidityChart = new Chart(tempHumidityCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '温度(℃)',
+                data: [],
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }, {
+                label: '湿度(%)',
+                data: [],
+                borderColor: 'rgb(54, 162, 235)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '温湿度趋势'
+                }
+            }
+        }
+    });
+
+    // 光照声音图表
+    const lightSoundCtx = document.getElementById('lightSoundChart').getContext('2d');
+    lightSoundChart = new Chart(lightSoundCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: '光照(lux)',
+                data: [],
+                borderColor: 'rgb(255, 206, 86)',
+                tension: 0.1
+            }, {
+                label: '声音(dB)',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '光照和声音趋势'
+                }
+            }
+        }
+    });
+}
+
+// 更新历史数据
+function updateHistoryData(limit = 10) {
+    fetch(`/api/sensor/history?limit=${limit}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tbody = document.querySelector('#history-table tbody');
+                tbody.innerHTML = '';
+                
+                data.data.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(parseInt(record.event_time) * 1000).toLocaleString()}</td>
+                        <td>${record.temperature}</td>
+                        <td>${record.humidity}</td>
+                        <td>${record.light_sense}</td>
+                        <td>${record.sound}</td>
+                        <td>${getStatusText(record)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // 更新图表数据
+                updateCharts(data.data);
+            }
+        })
+        .catch(error => console.error('获取历史数据失败:', error));
+}
+
+// 获取状态文本
+function getStatusText(record) {
+    const status = [];
+    if (record.tilt === '1') status.push('倾斜');
+    if (record.vibrate === '1') status.push('振动');
+    if (record.fire === '1') status.push('火焰');
+    if (record.smoke === '1') status.push('烟雾');
+    return status.length > 0 ? status.join(', ') : '正常';
+}
+
+// 更新图表数据
+function updateCharts(data) {
+    const labels = data.map(record => new Date(parseInt(record.event_time) * 1000).toLocaleString());
+    const temperatures = data.map(record => parseFloat(record.temperature));
+    const humidities = data.map(record => parseFloat(record.humidity));
+    const lights = data.map(record => parseFloat(record.light_sense));
+    const sounds = data.map(record => parseFloat(record.sound));
+
+    // 更新温湿度图表
+    tempHumidityChart.data.labels = labels;
+    tempHumidityChart.data.datasets[0].data = temperatures;
+    tempHumidityChart.data.datasets[1].data = humidities;
+    tempHumidityChart.update();
+
+    // 更新光照声音图表
+    lightSoundChart.data.labels = labels;
+    lightSoundChart.data.datasets[0].data = lights;
+    lightSoundChart.data.datasets[1].data = sounds;
+    lightSoundChart.update();
+}
+
+// 导出数据
+function exportData() {
+    fetch('/api/sensor/history?limit=1000')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const csvContent = "data:text/csv;charset=utf-8," 
+                    + "时间,温度(℃),湿度(%),光照(lux),声音(dB),状态\n"
+                    + data.data.map(record => {
+                        return `${new Date(parseInt(record.event_time) * 1000).toLocaleString()},${record.temperature},${record.humidity},${record.light_sense},${record.sound},${getStatusText(record)}`;
+                    }).join("\n");
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `sensor_data_${new Date().toLocaleString()}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        })
+        .catch(error => console.error('导出数据失败:', error));
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    updateRealtimeData();
+    updateHistoryData();
+    
+    // 定时更新数据
+    setInterval(updateRealtimeData, 5000);  // 每5秒更新一次实时数据
+    setInterval(() => updateHistoryData(10), 30000);  // 每30秒更新一次历史数据
+});
+</script>
+{% endblock %} 

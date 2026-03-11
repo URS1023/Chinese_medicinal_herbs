@@ -1,0 +1,54 @@
+# ========== 基础科学计算 ==========
+numpy>=1.24.0          # 数值计算库，提供多维数组支持
+pandas>=2.0.0          # 数据分析工具，提供数据结构和数据分析功能
+scikit-learn>=1.3.0    # 机器学习库，提供各种机器学习算法
+matplotlib>=3.7.0      # 绘图库，用于数据可视化
+
+# ========== 深度学习框架 ==========
+tensorflow>=2.12.0     # Google开源深度学习框架，本项目主要使用
+torch>=2.0.0           # PyTorch深度学习框架，提供辅助功能
+torchvision>=0.15.0    # PyTorch图像处理工具
+tensorflow-addons>=0.20.0  # TensorFlow扩展组件
+
+# ========== 图像处理 ==========
+pillow>=10.0.0         # Python图像处理库，提供基本图像操作
+opencv-python>=4.8.0   # OpenCV计算机视觉库，用于图像预处理和增强
+scikit-image>=0.21.0   # 图像处理算法库，补充OpenCV功能
+
+# ========== Web框架 ==========
+flask>=2.3.0           # 轻量级Web框架，项目主要后端框架
+Werkzeug>=2.3.0        # WSGI工具库，Flask依赖
+Flask-SQLAlchemy>=2.5.1 # Flask的ORM扩展，简化数据库操作
+Flask-Login>=0.6.0     # 用户认证扩展，处理登录状态管理
+Flask-WTF>=0.15.1      # Flask表单处理扩展，包含CSRF保护
+Flask-Migrate>=4.0.0   # 数据库迁移工具，管理数据库结构变更
+Flask-RESTful>=0.3.9   # RESTful API扩展，简化API开发
+Flask-Mail>=0.9.1      # 邮件发送扩展，用于邮件通知和验证
+
+# ========== 数据库 ==========
+SQLAlchemy>=2.0.0      # Python ORM库，数据库抽象层
+alembic>=1.11.0        # 数据库迁移工具，与Flask-Migrate配合使用
+
+# ========== API调用 ==========
+requests>=2.31.0       # HTTP库，用于调用百度AI等外部API
+python-dotenv>=0.19.0  # 环境变量管理，保存配置和密钥
+
+# ========== 工具和实用程序 ==========
+tqdm>=4.65.0           # 进度条库，显示训练和处理进度
+click>=8.1.3           # 命令行界面创建工具，Flask依赖
+itsdangerous>=2.1.2    # 数据签名工具，用于安全cookie，Flask依赖
+Jinja2>=3.1.2          # 模板引擎，Flask依赖
+MarkupSafe>=2.1.2      # 安全字符串处理，Jinja2依赖
+Babel>=2.12.1          # 国际化和本地化支持
+
+# ========== 生产环境依赖 ==========
+gunicorn>=21.2.0       # WSGI HTTP服务器，用于生产环境部署
+supervisor>=4.2.5      # 进程控制系统，用于管理生产环境进程
+
+# ========== 安全相关 ==========
+Flask-Bcrypt>=1.0.1    # 密码哈希扩展，安全存储用户密码
+PyJWT>=2.6.0           # JSON Web Token实现，用于API认证
+email-validator>=2.0.0 # 邮箱验证工具，表单验证使用
+
+# ========== 日志和监控 ==========
+structlog>=23.1.0      # 结构化日志工具，提升日志可读性和分析能力 

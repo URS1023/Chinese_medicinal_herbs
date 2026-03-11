@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}药材推荐{% endblock %}
+
+{% block extra_css %}
+<style>
+    .herb-card {
+        transition: transform 0.2s;
+        height: 100%;
+    }
+    .herb-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .herb-image {
+        height: 200px;
+        object-fit: cover;
+        border-top-left-radius: calc(0.375rem - 1px);
+        border-top-right-radius: calc(0.375rem - 1px);
+    }
+    .properties-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        margin: 2px;
+        border-radius: 12px;
+        background-color: #f0f0f0;
+        font-size: 0.85rem;
+    }
+    .filter-bar {
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    .similar-herb-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        margin: 4px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .similar-herb-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">药材推荐</h2>
+
+    <!-- 过滤选项 -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('herb_recommend', filter='all') }}" 
+               class="btn btn-{{ 'primary' if filter == 'all' else 'outline-primary' }}">
+                所有药材
+            </a>
+            <a href="{{ url_for('herb_recommend', filter='common') }}" 
+               class="btn btn-{{ 'primary' if filter == 'common' else 'outline-primary' }}">
+                常用药材
+            </a>
+            <a href="{{ url_for('herb_recommend', filter='seasonal') }}" 
+               class="btn btn-{{ 'primary' if filter == 'seasonal' else 'outline-primary' }}">
+                应季药材
+            </a>
+        </div>
+    </div>
+
+    <!-- 药材网格 -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+        {% for herb in herbs.items %}
+        <div class="col">
+            <div class="card herb-card">
+                <img src="{{ url_for('static', filename=herb.image_path) if herb.image_path else url_for('static', filename='images/placeholder.jpg') }}"
+                     class="card-img-top herb-image" alt="{{ herb.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ herb.name }}</h5>
+                    <div class="mb-2">
+                        {% if herb.properties %}
+                            {% for property in herb.properties.split('、')[:2] %}
+                            <span class="properties-tag">{{ property }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <p class="card-text text-muted small">{{ herb.effects[:80] + '...' if herb.effects else '暂无描述' }}</p>
+                    <button type="button" class="btn btn-primary btn-sm w-100 view-details" 
+                            data-herb-info='{{ {
+                                "id": herb.id,
+                                "name": herb.name,
+                                "english_name": herb.english_name,
+                                "properties": herb.properties,
+                                "effects": herb.effects,
+                                "usage_parts": herb.usage_parts,
+                                "description": herb.description,
+                                "season": herb.season,
+                                "image_path": herb.image_path,
+                                "similar_herbs": herb.similar_herbs
+                            }|tojson }}'>
+                        查看详情
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 分页导航 -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if herbs.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('herb_recommend', page=herbs.prev_num, filter=filter) }}">上一页</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in herbs.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == herbs.page else '' }}">
+                        <a class="page-link" href="{{ url_for('herb_recommend', page=page_num, filter=filter) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if herbs.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('herb_recommend', page=herbs.next_num, filter=filter) }}">下一页</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- 药材详情模态框 -->
+<div class="modal fade" id="herbDetailModal" tabindex="-1" aria-labelledby="herbDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="herbDetailModalLabel">药材详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalHerbImage" src="" alt="" class="img-fluid rounded mb-3">
+                        <div class="herb-info">
+                            <h6>基本信息</h6>
+                            <p><strong>中文名：</strong><span id="modalHerbName"></span></p>
+                            <p><strong>英文名：</strong><span id="modalHerbEnglishName"></span></p>
+                            <p><strong>使用部位：</strong><span id="modalHerbUsageParts"></span></p>
+                            <p><strong>应季时节：</strong><span id="modalHerbSeason"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6>性味</h6>
+                            <div id="modalHerbProperties"></div>
+                        </div>
+                        <div class="mb-3">
+                            <h6>功效</h6>
+                            <p id="modalHerbEffects"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>描述</h6>
+                            <p id="modalHerbDescription"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>相似药材</h6>
+                            <div id="modalSimilarHerbs"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化模态框
+    const herbDetailModal = new bootstrap.Modal(document.getElementById('herbDetailModal'));
+    
+    // 使用事件委托处理所有查看详情按钮的点击
+    document.addEventListener('click', function(event) {
+        const button = event.target.closest('.view-details');
+        if (!button) return;
+        
+        try {
+            // 从data属性获取药材信息
+            const herbInfo = JSON.parse(button.getAttribute('data-herb-info'));
+            
+            // 更新基本信息
+            document.getElementById('modalHerbName').textContent = herbInfo.name || '未知';
+            document.getElementById('modalHerbEnglishName').textContent = herbInfo.english_name || '暂无';
+            document.getElementById('modalHerbUsageParts').textContent = herbInfo.usage_parts || '暂无记录';
+            document.getElementById('modalHerbSeason').textContent = herbInfo.season || '不限';
+
+            // 更新性味（以标签形式显示）
+            const propertiesDiv = document.getElementById('modalHerbProperties');
+            if (herbInfo.properties) {
+                const properties = herbInfo.properties.split('、');
+                propertiesDiv.innerHTML = properties.map(p => 
+                    `<span class="properties-tag">${p}</span>`
+                ).join(' ');
+            } else {
+                propertiesDiv.textContent = '暂无记录';
+            }
+
+            // 更新功效和描述
+            document.getElementById('modalHerbEffects').textContent = herbInfo.effects || '暂无记录';
+            document.getElementById('modalHerbDescription').textContent = herbInfo.description || '暂无记录';
+
+            // 更新相似药材
+            const similarHerbsDiv = document.getElementById('modalSimilarHerbs');
+            if (herbInfo.similar_herbs) {
+                const similarHerbs = herbInfo.similar_herbs.split('、');
+                similarHerbsDiv.innerHTML = similarHerbs.map(herb => 
+                    `<span class="similar-herb-tag">${herb}</span>`
+                ).join(' ');
+            } else {
+                similarHerbsDiv.textContent = '暂无记录';
+            }
+
+            // 设置图片
+            const imagePath = herbInfo.image_path ? 
+                `/static/${herbInfo.image_path}` : 
+                '/static/images/placeholder.jpg';
+            document.getElementById('modalHerbImage').src = imagePath;
+            
+            // 显示模态框
+            herbDetailModal.show();
+        } catch (error) {
+            console.error('处理药材详情失败:', error);
+            alert('获取药材详情失败，请稍后重试');
+        }
+    });
+});
+</script>
+{% endblock %} 

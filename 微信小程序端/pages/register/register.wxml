@@ -1,0 +1,18 @@
+<!--pages/register/register.wxml-->
+<view class="container">
+  <image class="logo" src="/images/logo.png"/>
+  <view class="form">
+    <input placeholder="用户名" bindinput="onUsernameInput"/>
+    <input placeholder="密码" password="true" bindinput="onPasswordInput"/>
+    <input placeholder="确认密码" password="true" bindinput="onPasswordagain"/>
+    <button bindtap="onLogin">注册</button>
+  </view>
+    <view class="actions">
+      <view class="register" bindtap="onRegister">
+         去登录
+     </view>
+     <view class="onForgotPassword" bindtap="onForgotPassword">
+         忘记密码
+     </view>
+    </view>
+</view>

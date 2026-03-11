@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}识别结果{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-image {
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .confidence-bar {
+        height: 24px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+    .confidence-value {
+        height: 100%;
+        background-color: #0d6efd;
+        transition: width 0.6s ease;
+    }
+    .herb-card {
+        transition: transform 0.2s;
+    }
+    .herb-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .similar-herb-image {
+        height: 150px;
+        object-fit: cover;
+    }
+    .properties-tag {
+        font-size: 0.8rem;
+        padding: 0.15rem 0.4rem;
+        margin-right: 0.2rem;
+        margin-bottom: 0.2rem;
+        border-radius: 12px;
+        display: inline-block;
+        background-color: #e9ecef;
+    }
+    .similar-herb-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        margin: 4px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .similar-herb-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+    }
+    .modal-herb-image {
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .herb-info-section {
+        padding: 0.6rem;
+        border-radius: 8px;
+        background-color: rgba(0,0,0,0.02);
+        margin-bottom: 0.5rem;
+    }
+    .herb-info-section h6 {
+        color: var(--primary-color);
+        margin-bottom: 0.3rem;
+        font-size: 0.9rem;
+    }
+    .herb-info-section p {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+    .ai-prediction {
+        border-left: 4px solid #0d6efd;
+        background-color: #f8f9fa;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        margin-top: 1.5rem;
+    }
+    .ai-prediction .card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-bottom: none;
+        padding: 0.8rem 1rem;
+    }
+    .ai-prediction .card-body {
+        padding: 1rem;
+    }
+    .other-prediction {
+        border-left: 3px solid #6c757d;
+        margin-bottom: 0.5rem;
+        padding: 0.6rem;
+        background-color: #f9f9f9;
+        border-radius: 0.25rem;
+    }
+    .ai-badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 5px;
+    }
+    .equal-height-row {
+        min-height: 550px;
+    }
+    .equal-height-row > [class*='col-'] {
+        display: flex;
+        flex-direction: column;
+    }
+    .equal-height-row .card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .equal-height-row .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .scrollable-content {
+        overflow-y: auto;
+        scrollbar-width: thin;
+        height: 100%;
+        max-height: 600px;
+    }
+    .scrollable-content::-webkit-scrollbar {
+        width: 5px;
+    }
+    .scrollable-content::-webkit-scrollbar-thumb {
+        background-color: #d1d1d1;
+        border-radius: 5px;
+    }
+    .scrollable-content::-webkit-scrollbar-track {
+        background-color: #f0f0f0;
+    }
+    .similar-herbs-container {
+        height: calc(100% - 10px);
+        padding: 0;
+    }
+    .herb-card-compact {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        padding: 6px;
+        margin-bottom: 8px;
+        transition: all 0.2s ease;
+        background-color: #fdfdfd;
+        position: relative;
+        overflow: hidden;
+    }
+    .herb-card-compact:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        background-color: #f9f9ff;
+    }
+    .herb-card-compact:hover h6 {
+        color: var(--primary-dark);
+    }
+    .herb-card-compact:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: var(--primary-color);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    .herb-card-compact:hover:before {
+        opacity: 1;
+    }
+    .herb-card-compact .img-container {
+        height: 60px;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+    .herb-card-compact img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .herb-card-compact h6 {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .herb-card-compact .btn-sm {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    @media (max-width: 768px) {
+        .equal-height-row {
+            min-height: auto;
+        }
+        .equal-height-row > [class*='col-'] {
+            display: block;
+        }
+        .equal-height-row .card {
+            height: auto !important;
+            margin-bottom: 1rem;
+        }
+        .scrollable-content {
+            max-height: 500px;
+        }
+    }
+    @media (min-width: 1200px) {
+        .equal-height-row {
+            min-height: 650px;
+        }
+    }
+    .card-header.bg-white {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0,0,0,0.125);
+    }
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border-bottom: none;
+    }
+    .ai-results-container {
+        border-top: 1px solid rgba(0,0,0,0.1);
+        background-color: #f8f9fa;
+    }
+    .ai-results-container .card-header {
+        padding: 0.75rem 1rem;
+        background-color: #f1f3f5;
+    }
+    .ai-results-container .card {
+        transition: transform 0.2s;
+        margin-bottom: 0 !important;
+    }
+    .ai-results-container .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    .confidence-value.bg-success {
+        background-color: #28a745;
+    }
+    .other-results {
+        max-height: 80px;
+        overflow-y: auto;
+        font-size: 0.85rem;
+    }
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+    .modal-header, .modal-footer {
+        padding: 0.5rem 1rem;
+    }
+    .modal-body {
+        padding: 1rem;
+    }
+    .modal-herb-image {
+        max-height: 250px;
+    }
+    .card {
+        margin-bottom: 0;
+        border-radius: 0.375rem;
+    }
+    .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    .similar-herbs-container .herb-card-compact:last-child {
+        margin-bottom: 0;
+    }
+    /* 移动设备上的优化 */
+    @media (max-width: 768px) {
+        .equal-height-row {
+            min-height: auto;
+        }
+        .card-body {
+            padding: 0.5rem;
+        }
+        .herb-info-section {
+            padding: 0.5rem;
+        }
+        .ai-results-container .card-header {
+            padding: 0.5rem;
+        }
+        .result-image {
+            max-height: 200px;
+        }
+    }
+    .baidu-highlight {
+        position: relative;
+    }
+    .baidu-highlight::before {
+        content: "百度AI";
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        z-index: 1;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row equal-height-row">
+        <!-- 主要识别结果 -->
+        <div class="col-md-7 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-white py-2">
+                    <h3 class="card-title mb-0">识别结果</h3>
+                </div>
+                <div class="card-body p-0">
+                    <div class="scrollable-content p-2" style="max-height: 58%;">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <img src="{{ url_for('static', filename=image_path) }}" class="img-fluid rounded result-image" alt="上传图片">
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ herb.name }}</h4>
+                                <div class="confidence-bar mb-2">
+                                    <div class="confidence-value" style="width: {{ confidence * 100 }}%"></div>
+                                </div>
+                                <p class="text-muted small mb-2">置信度: {{ "%.2f"|format(confidence * 100) }}%</p>
+                                <hr class="my-2">
+                                <div class="herb-info-section">
+                                    <h6>性味</h6>
+                                    <div>
+                                        {% if herb.properties %}
+                                            {% for property in herb.properties.split('、') %}
+                                                <span class="properties-tag">{{ property }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted">暂无记录</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="herb-info-section">
+                                    <h6>功效</h6>
+                                    <p>{{ herb.effects or '暂无记录' }}</p>
+                                </div>
+                                <div class="herb-info-section">
+                                    <h6>使用部位</h6>
+                                    <p>{{ herb.usage_parts or '暂无记录' }}</p>
+                                </div>
+                                <div class="herb-info-section">
+                                    <h6>描述</h6>
+                                    <p>{{ herb.description or '暂无记录' }}</p>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm mt-2 view-details" data-herb-info='{{ herb_json|tojson }}'>
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部AI结果容器 -->
+                    <div class="ai-results-container">
+                        <div class="card-header border-top bg-light d-flex align-items-center py-2">
+                            <h5 class="mb-0 fs-6"><i class="fas fa-robot me-2"></i>人工智能分析结果</h5>
+                        </div>
+                        <div class="p-2">
+                            <div class="row g-2">
+                                <!-- 百度AI预测结果 -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm baidu-highlight">
+                                        <div class="card-header bg-primary text-white py-1">
+                                            <h6 class="mb-0 small">百度AI识别结果</h6>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            {% if baidu_result and baidu_result.name %}
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-primary ai-badge me-2">{{ baidu_result.name }}</span>
+                                                <div class="confidence-bar flex-grow-1" style="height: 15px;">
+                                                    <div class="confidence-value" style="width: {{ baidu_result.confidence * 100 }}%"></div>
+                                                </div>
+                                                <span class="ms-2 text-muted small">{{ "%.2f"|format(baidu_result.confidence * 100) }}%</span>
+                                            </div>
+                                            {% if baidu_result.description %}
+                                            <div class="small text-muted mb-2 border-start ps-2 border-primary" style="border-width: 2px !important;">
+                                                {{ baidu_result.description|truncate(100) }}
+                                            </div>
+                                            {% endif %}
+                                            {% if baidu_result.all_results and baidu_result.all_results|length > 1 %}
+                                            <hr class="my-1">
+                                            <div class="small text-muted mb-1">其他可能结果:</div>
+                                            <div class="other-results">
+                                                {% for result in baidu_result.all_results[1:3] %}
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="badge bg-secondary small me-1">{{ result.name }}</span>
+                                                    <div class="confidence-bar flex-grow-1" style="height: 10px;">
+                                                        <div class="confidence-value" style="width: {{ result.score * 100 }}%"></div>
+                                                    </div>
+                                                    <span class="ms-1 text-muted small">{{ "%.2f"|format(result.score * 100) }}%</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            {% else %}
+                                            <div class="text-center py-2">
+                                                <p class="text-muted small mb-0">未获取到百度AI预测结果</p>
+                                                <small class="text-muted">(请检查API配置或网络连接)</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 本地模型预测结果 -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-header bg-success text-white py-1">
+                                            <h6 class="mb-0 small">本地模型识别结果</h6>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-success ai-badge me-2">{{ herb.name }}</span>
+                                                <div class="confidence-bar flex-grow-1" style="height: 15px;">
+                                                    <div class="confidence-value bg-success" style="width: {{ confidence * 100 }}%"></div>
+                                                </div>
+                                                <span class="ms-2 text-muted small">{{ "%.2f"|format(confidence * 100) }}%</span>
+                                            </div>
+                                            <hr class="my-1">
+                                            <div class="mt-1 text-center">
+                                                <div class="small text-success fw-bold">成分分析</div>
+                                                <div class="d-flex flex-wrap justify-content-center mt-1">
+                                                    {% if herb.properties %}
+                                                    {% for property in herb.properties.split('、')[:3] %}
+                                                    <span class="badge bg-light text-success m-1">{{ property }}</span>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 相似药材推荐 -->
+        <div class="col-md-5 mb-3">
+            {% if similar_herbs and similar_herbs|length > 0 %}
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-2">
+                    <h5 class="mb-0 fs-6">相似药材推荐</h5>
+                    <span class="badge bg-light text-primary">{{ similar_herbs|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="scrollable-content p-2">
+                        <div class="similar-herbs-container">
+                            {% for herb in similar_herbs %}
+                            <div class="herb-card-compact">
+                                <div class="d-flex">
+                                    <div style="width: 45px; flex-shrink: 0">
+                                        <div class="img-container">
+                                            <img src="{{ url_for('static', filename=herb.image_path) }}" 
+                                                 alt="{{ herb.name }}">
+                                        </div>
+                                    </div>
+                                    <div class="ps-2 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0 small">{{ herb.name }}</h6>
+                                            <button type="button" 
+                                                    class="btn btn-outline-primary btn-sm px-1 py-0"
+                                                    style="font-size: 0.7rem; line-height: 1.2;"
+                                                    onclick="showHerbDetails('{{ herb.name }}', 
+                                                            '{{ herb.properties }}', 
+                                                            '{{ herb.effects }}', 
+                                                            '{{ herb.usage_parts }}', 
+                                                            '{{ herb.description }}')">
+                                                查看
+                                            </button>
+                                        </div>
+                                        {% if herb.properties %}
+                                        <p class="card-text text-muted small mb-0 text-truncate">
+                                            <span class="text-primary">性味：</span>{{ herb.properties or '暂无数据' }}
+                                        </p>
+                                        {% endif %}
+                                        {% if herb.effects %}
+                                        <p class="card-text text-muted small mb-0 text-truncate">
+                                            <span class="text-primary">功效：</span>{{ herb.effects or '暂无数据' }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0 fs-6">相似药材推荐</h5>
+                </div>
+                <div class="card-body text-center d-flex align-items-center justify-content-center">
+                    <p class="text-muted mb-0">暂无相似药材推荐</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 药材详情模态框 -->
+<div class="modal fade" id="herbDetailModal" tabindex="-1" aria-labelledby="herbDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="herbDetailModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <img id="modalHerbImage" class="modal-herb-image img-fluid" alt="药材图片">
+                </div>
+                <div class="herb-info-section">
+                    <h6 class="fw-bold">性味</h6>
+                    <div id="modalHerbProperties"></div>
+                </div>
+                <div class="herb-info-section">
+                    <h6 class="fw-bold">功效</h6>
+                    <p id="modalHerbEffects" class="mb-0"></p>
+                </div>
+                <div class="herb-info-section">
+                    <h6 class="fw-bold">使用部位</h6>
+                    <p id="modalHerbUsageParts" class="mb-0"></p>
+                </div>
+                <div class="herb-info-section">
+                    <h6 class="fw-bold">描述</h6>
+                    <p id="modalHerbDescription" class="mb-0"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化模态框
+    const herbDetailModal = new bootstrap.Modal(document.getElementById('herbDetailModal'));
+    
+    // 统一的显示详情函数
+    window.showHerbDetails = function(herbData) {
+        try {
+            // 如果传入的是字符串参数，则使用旧的方式处理
+            if (typeof herbData === 'string') {
+                const [name, properties, effects, usageParts, description] = arguments;
+                herbData = {
+                    name,
+                    properties,
+                    effects,
+                    usage_parts: usageParts,
+                    description
+                };
+            }
+
+            // 更新模态框内容
+            document.getElementById('herbDetailModalLabel').textContent = herbData.name;
+            
+            // 更新性味（以标签形式显示）
+            const propertiesDiv = document.getElementById('modalHerbProperties');
+            if (herbData.properties) {
+                const properties = herbData.properties.split('、');
+                propertiesDiv.innerHTML = properties.map(p => 
+                    `<span class="properties-tag">${p}</span>`
+                ).join(' ');
+            } else {
+                propertiesDiv.textContent = '暂无记录';
+            }
+
+            // 更新其他信息
+            document.getElementById('modalHerbEffects').textContent = herbData.effects || '暂无记录';
+            document.getElementById('modalHerbUsageParts').textContent = herbData.usage_parts || '暂无记录';
+            document.getElementById('modalHerbDescription').textContent = herbData.description || '暂无记录';
+
+            // 设置图片
+            if (herbData.image_path) {
+                const imagePath = herbData.image_path.startsWith('/') ? 
+                    herbData.image_path : 
+                    `/static/${herbData.image_path}`;
+                document.getElementById('modalHerbImage').src = imagePath;
+            }
+
+            // 显示模态框
+            herbDetailModal.show();
+        } catch (error) {
+            console.error('处理药材详情失败:', error);
+            alert('获取药材详情失败，请稍后重试');
+        }
+    };
+
+    // 处理主要识别结果的详情按钮点击
+    document.querySelector('.view-details').addEventListener('click', function() {
+        const herbInfo = JSON.parse(this.getAttribute('data-herb-info'));
+        showHerbDetails(herbInfo);
+    });
+});
+</script>
+{% endblock %} 

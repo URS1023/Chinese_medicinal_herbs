@@ -1,0 +1,10 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/LoginOKPage",
+    "pages/register",
+    "pages/home",
+    "entryability/tabbar/itemtest",
+    "entryability/Datadisplay"
+  ]
+}

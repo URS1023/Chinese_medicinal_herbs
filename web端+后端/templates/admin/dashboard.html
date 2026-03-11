@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}管理员仪表板{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- 顶部统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-users"></i> 用户总数
+                    </h5>
+                    <h2 class="mb-0">{{ user_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-leaf"></i> 药材总数
+                    </h5>
+                    <h2 class="mb-0">{{ herb_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-history"></i> 识别总次数
+                    </h5>
+                    <h2 class="mb-0">{{ detection_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作按钮 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">快速操作</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-users"></i> 用户管理
+                    </a>
+                    <a href="{{ url_for('admin_herbs.herbs') }}" class="btn btn-success me-2">
+                        <i class="fas fa-leaf"></i> 药材管理
+                    </a>
+                    <a href="{{ url_for('admin.history') }}" class="btn btn-info me-2">
+                        <i class="fas fa-history"></i> 识别历史
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近活动 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">最近注册用户</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for user in recent_users %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ user.username }}</h6>
+                                    <small class="text-muted">
+                                        注册时间：{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </small>
+                                </div>
+                                <a href="{{ url_for('admin.view_user', user_id=user.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">最近识别记录</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for record in recent_history %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ record.herb.name }}</h6>
+                                    <small class="text-muted">
+                                        用户：{{ record.user.username }} | 
+                                        时间：{{ record.detection_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-success">
+                                    {{ "%.2f%%"|format(record.confidence * 100) }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+</style>
+{% endblock %} 

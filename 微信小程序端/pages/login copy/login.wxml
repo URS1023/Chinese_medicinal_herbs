@@ -1,0 +1,18 @@
+<!--login.wxml-->
+<view class="container">
+  <image class="logo" src="/images/logo.png"/>
+  <text style="font-size: large;">中药材推广小程序</text>
+  <view class="form">
+    <input placeholder="用户名" bindinput="onUsernameInput"/>
+    <input placeholder="密码" password="true" bindinput="onPasswordInput"/>
+    <button bindtap="onLogin">登录</button>
+  </view>
+    <view class="actions">
+      <view class="register" bindtap="onRegister">
+         去注册
+     </view>
+     <view class="onForgotPassword" bindtap="onForgotPassword">
+         忘记密码
+     </view>
+    </view>
+</view>

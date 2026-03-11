@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users"></i> 用户管理</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-user-plus"></i> 添加用户
+        </button>
+    </div>
+
+    <!-- 搜索和筛选 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="row g-3" method="GET">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="搜索用户名..." value="{{ request.args.get('search', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="role">
+                        <option value="">所有角色</option>
+                        <option value="admin" {% if request.args.get('role') == 'admin' %}selected{% endif %}>管理员</option>
+                        <option value="user" {% if request.args.get('role') == 'user' %}selected{% endif %}>普通用户</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> 筛选
+                    </button>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                        <i class="fas fa-sync"></i> 重置
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 用户列表 -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>角色</th>
+                            <th>注册时间</th>
+                            <th>识别次数</th>
+                            <th>最后活动</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge bg-danger">管理员</span>
+                                {% else %}
+                                <span class="badge bg-secondary">普通用户</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>{{ user.history|length }}</td>
+                            <td>
+                                {% if user.history %}
+                                {{ user.history[-1].detection_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                暂无活动
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info me-1" 
+                                        onclick="viewUser({{ user.id }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary me-1" 
+                                        onclick="editUser({{ user.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% if not user.is_admin or current_user.id != user.id %}
+                                <button class="btn btn-sm btn-danger" 
+                                        onclick="deleteUser({{ user.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加用户模态框 -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm" method="POST" action="{{ url_for('admin.add_user') }}">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="is_admin" id="isAdmin">
+                            <label class="form-check-label" for="isAdmin">设为管理员</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="addUserForm" class="btn btn-primary">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑用户模态框 -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密码（留空表示不修改）</label>
+                        <input type="password" class="form-control" name="password">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="is_admin" id="editIsAdmin">
+                            <label class="form-check-label" for="editIsAdmin">设为管理员</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="editUserForm" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewUser(userId) {
+    window.location.href = `{{ url_for('admin.view_user', user_id=0) }}`.replace('0', userId);
+}
+
+function editUser(userId) {
+    fetch(`{{ url_for('admin.get_user', user_id=0) }}`.replace('0', userId))
+        .then(response => response.json())
+        .then(data => {
+            const form = document.getElementById('editUserForm');
+            form.action = `{{ url_for('admin.edit_user', user_id=0) }}`.replace('0', userId);
+            form.querySelector('[name="username"]').value = data.username;
+            form.querySelector('[name="is_admin"]').checked = data.is_admin;
+            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+        });
+}
+
+function deleteUser(userId) {
+    if (confirm('确定要删除这个用户吗？此操作不可恢复！')) {
+        fetch(`{{ url_for('admin.delete_user', user_id=0) }}`.replace('0', userId), {
+            method: 'POST'
+        }).then(() => window.location.reload());
+    }
+}
+</script>
+{% endblock %} 

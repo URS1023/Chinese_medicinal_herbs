@@ -1,0 +1,109 @@
+<!--pages/list1/list1.wxml-->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="page-title">药材推荐</view>
+  <view class="banner">
+   <swiper indicator-dots indicator-color="rgba(255,255,255,0.5)"
+   indicator-active-color="#fff" circular autoplay interval="4000">
+   <swiper-item><image src="/images/picture/banner1.jpeg"></image></swiper-item>
+   <swiper-item><image src="/images/picture/banner2.jpeg"></image></swiper-item>
+   <swiper-item><image src="/images/picture/banner3.jpg"></image></swiper-item>
+   </swiper>
+</view>
+
+  <!-- 过滤选项 -->
+  <view class="filter-bar">
+    <navigator 
+      class="filter-btn {{filter === 'all' ? 'active' : ''}}" 
+      url="/pages/herbRecommend/herbRecommend?filter=all"
+    >
+      所有药材
+    </navigator>
+    <navigator 
+      class="filter-btn {{filter === 'common' ? 'active' : ''}}" 
+      url="/pages/herbRecommend/herbRecommend?filter=common"
+    >
+      常用药材
+    </navigator>
+    <navigator 
+      class="filter-btn {{filter === 'seasonal' ? 'active' : ''}}" 
+      url="/pages/herbRecommend/herbRecommend?filter=seasonal"
+    >
+      应季药材
+    </navigator>
+  </view>
+
+  <!-- 药材列表 -->
+  <view class="herb-grid">
+    <navigator 
+      wx:for="{{herbs}}" 
+      wx:key="id" 
+      class="herb-card" 
+      bindtap="showDetail" 
+      data-herb="{{item}}"
+    >
+      <image 
+        class="herb-image" 
+        src="{{item.image_path}}" 
+        mode="aspectFill" 
+        alt="{{item.name}}"
+      />
+      <view class="card-body">
+        <view class="card-title">{{item.name}}</view>
+        <view class="properties">
+          <text wx:for="{{item.properties.split('、')}}" wx:key="prop" class="properties-tag">
+            {{item}}
+          </text>
+        </view>
+        <view class="card-desc">{{item.effects.split('。')[0]}}...</view>
+        <button class="detail-btn">查看详情</button>
+      </view>
+    </navigator>
+  </view>
+</view>
+
+<!-- 详情模态框 -->
+<view class="modal" hidden="{{!showModal}}">
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">药材详情</text>
+      <!-- <icon type="close" size="20" bindtap="hideModal" class="close-btn"></icon> -->
+      <button type="close" size="20" bindtap="hideModal" class="close-btn">x</button>
+    </view>
+    <view class="modal-body">
+      <view class="detail-row">
+        <image class="detail-image" src="{{currentHerb.image_path}}" mode="aspectFit" />
+        <view class="detail-info">
+          <view class="info-item">
+            <text class="label">中文名：</text>
+            <text class="value">{{currentHerb.name}}</text>
+          </view>
+          <view class="info-item">
+            <text class="label">英文名：</text>
+            <text class="value">{{currentHerb.english_name || '暂无'}}</text>
+          </view>
+          <view class="info-item">
+            <text class="label">应季时节：</text>
+            <text class="value">{{currentHerb.season || '不限'}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="detail-section">
+        <view class="section-title">性味</view>
+        <view class="properties">
+          <text wx:for="{{currentHerb.properties.split('、')}}" wx:key="prop" class="properties-tag">
+            {{item}}
+          </text>
+        </view>
+      </view>
+      <view class="detail-section">
+        <view class="section-title">功效</view>
+        <text class="desc">{{currentHerb.effects}}</text>
+      </view>
+      <view class="detail-section">
+        <view class="section-title">描述</view>
+        <text class="desc">{{currentHerb.description}}</text>
+      </view>
+    </view>
+  </view>
+</view>

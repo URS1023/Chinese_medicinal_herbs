@@ -1,0 +1,39 @@
+/* detail.wxss */
+.container {
+  padding: 20rpx;
+}
+.herb-image {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 10rpx;
+}
+.herb-info {
+  margin-top: 20rpx;
+}
+.herb-name {
+  font-size: 36rpx;
+  font-weight: bold;
+}
+.herb-description {
+  font-size: 28rpx;
+  color: #666666;
+  margin-top: 10rpx;
+}
+.subtitle {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-top: 20rpx;
+  display: block;
+}
+.herb-properties, .herb-usage, .herb-dosage {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+}
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40rpx;
+}
+.action-buttons button {
+  width: 40%;
+}

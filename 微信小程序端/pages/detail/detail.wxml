@@ -1,0 +1,24 @@
+<!--detail.wxml-->
+<view class="container" wx:if="{{herb}}">
+  <image class="herb-image" src="{{herb.image}}" mode="aspectFill"/>
+  <view class="herb-info">
+    <text class="herb-name">{{herb.name}}</text>
+    <text class="herb-description">{{herb.description}}</text>
+  </view>
+  <view class="herb-properties">
+    <text class="subtitle">药性：</text>
+    <text>{{herb.properties}}</text>
+  </view>
+  <view class="herb-usage">
+    <text class="subtitle">用法用量：</text>
+    <text>{{herb.usage}}</text>
+  </view>
+  <view class="herb-dosage">
+    <text class="subtitle">剂量：</text>
+    <text>{{herb.dosage}}</text>
+  </view>
+  <view class="action-buttons">
+    <button bindtap="onCollectTap">收藏</button>
+    <button bindtap="onShareTap">分享</button>
+  </view>
+</view>

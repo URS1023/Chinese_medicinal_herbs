@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}登录{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        max-width: 450px;
+        margin: 2rem auto;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+
+    .login-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .login-header p {
+        margin: 1rem 0 0;
+        opacity: 0.8;
+    }
+
+    .login-body {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.8rem;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 1rem;
+        box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(78, 115, 223, 0.3);
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #6c757d;
+    }
+
+    .register-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>欢迎回来</h2>
+            <p>请登录您的账号以继续使用</p>
+        </div>
+        <div class="login-body">
+            <form id="loginForm" method="post">
+                <div class="form-group">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i> 登录
+                </button>
+            </form>
+            <div class="register-link">
+                还没有账号？ <a href="{{ url_for('register') }}">立即注册</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // 禁用登录按钮，防止重复提交
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> 登录中...';
+    
+    fetch('{{ url_for("login") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+            'username': document.getElementById('username').value,
+            'password': document.getElementById('password').value
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || '登录失败');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            showError(data.message || '登录失败，请稍后重试');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError(error.message || '登录失败，请稍后重试');
+    })
+    .finally(() => {
+        // 恢复登录按钮状态
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> 登录';
+    });
+});
+
+function showError(message) {
+    // 创建或更新警告消息
+    let alert = document.querySelector('.alert');
+    if (!alert) {
+        alert = document.createElement('div');
+        alert.className = 'alert alert-danger';
+        document.querySelector('form').insertBefore(alert, document.querySelector('form').firstChild);
+    }
+    alert.textContent = message;
+    
+    // 添加淡入效果
+    alert.style.opacity = '0';
+    alert.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => {
+        alert.style.opacity = '1';
+    }, 10);
+}
+</script>
+{% endblock %} 

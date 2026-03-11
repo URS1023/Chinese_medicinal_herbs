@@ -1,0 +1,36 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <icon type="search" size="20"></icon>
+    <input type="text" placeholder="搜索中药材" bindinput="onSearch"/>
+  </view>
+  <!-- 轮播图 -->
+  <swiper indicator-dots="true" autoplay="true" interval="3000" duration="500">
+    <block wx:for="{{bannerList}}" wx:key="id">
+      <swiper-item bindtap="onBannerTap" data-id="{{item.id}}">
+        <image src="{{item.image}}" mode="aspectFill"/>
+        <view class="banner-text">{{item.text}}</view>
+      </swiper-item>
+    </block>
+  </swiper>
+  <!-- 分类导航 -->
+  <view class="category-nav">
+    <block wx:for="{{categoryList}}" wx:key="id">
+      <view class="category-item" bindtap="onCategoryTap" data-id="{{item.id}}" hover-class="category-item-hover">
+        <icon type="{{item.icon}}" size="30"></icon>
+        <text>{{item.name}}</text>
+      </view>
+    </block>
+  </view>
+  <!-- 公告资讯 -->
+  <view class="announcement-section">
+    <view class="section-title">公告资讯</view>
+    <block wx:for="{{announcementList}}" wx:key="id">
+      <view class="announcement-item" bindtap="onAnnouncementTap" data-id="{{item.id}}">
+        <text class="announcement-title">{{item.title}}</text>
+        <text class="announcement-date">{{item.date}}</text>
+      </view>
+    </block>
+  </view>
+</view>
